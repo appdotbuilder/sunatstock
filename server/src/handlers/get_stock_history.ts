@@ -1,9 +1,23 @@
 
+import { db } from '../db';
+import { stockTransactionsTable } from '../db/schema';
 import { type StockTransaction } from '../schema';
+import { eq, desc } from 'drizzle-orm';
 
 export async function getStockHistory(itemId: number): Promise<StockTransaction[]> {
-  // This is a placeholder declaration! Real code should be implemented here.
-  // The goal of this handler is to fetch stock transaction history for a specific item.
-  // Shows all purchases, usage, and adjustments for the item.
-  return [];
+  try {
+    const results = await db.select()
+      .from(stockTransactionsTable)
+      .where(eq(stockTransactionsTable.item_id, itemId))
+      .orderBy(desc(stockTransactionsTable.transaction_date))
+      .execute();
+
+    return results.map(transaction => ({
+      ...transaction,
+      // No numeric conversions needed - all fields are already integers or strings
+    }));
+  } catch (error) {
+    console.error('Get stock history failed:', error);
+    throw error;
+  }
 }
